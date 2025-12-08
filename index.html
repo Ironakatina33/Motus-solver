@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Solver Motus / Wordle FR</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1><span class="logo-dot"></span> Solver Motus / Wordle FR</h1>
+        <div class="subtitle">
+          Règle les couleurs, charge un dictionnaire français, laisse le solver filtrer,
+          proposer les meilleurs mots et garde tes stats de parties.
+        </div>
+      </div>
+      <div class="pill-row">
+        <div class="pill">
+          <span class="pill-dot" style="background:#22c55e;"></span>
+          <span>🟩 bien placé</span>
+        </div>
+        <div class="pill">
+          <span class="pill-dot" style="background:#eab308;"></span>
+          <span>🟨 mal placé</span>
+        </div>
+        <div class="pill">
+          <span class="pill-dot" style="background:#4b5563;"></span>
+          <span>⬛ absent</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- COLONNE GAUCHE : Dictionnaire + Tentatives -->
+      <section class="card">
+        <h2>1️⃣ Paramètres & dictionnaire</h2>
+        <div class="hint">
+          Choisis la taille du mot et charge un dictionnaire français (fichier .txt, un mot par ligne).
+        </div>
+
+        <div class="field-row">
+          <label for="wordLength">Taille du mot :</label>
+          <input type="number" id="wordLength" min="3" max="12" value="7" style="width:70px;">
+          <span class="info-text">
+            Si tu laisses vide, la taille sera déduite automatiquement du premier mot saisi.
+          </span>
+        </div>
+
+        <div class="field-row">
+          <div class="file-input">
+            <label for="dictFile">Dictionnaire (.txt) :</label><br>
+            <input type="file" id="dictFile" accept=".txt">
+          </div>
+          <span id="dictStats" class="stat-tag">Mots chargés : <strong>0</strong></span>
+        </div>
+
+        <div class="field-row" style="align-items:flex-start;">
+          <div style="flex:1 1 auto;">
+            <label for="customDict">Mots supplémentaires (optionnel) :</label>
+            <textarea id="customDict" placeholder="Un mot par ligne, par ex. :
+ENIGMES
+EPINEUX
+ETOILES"></textarea>
+          </div>
+        </div>
+
+        <div class="info-text">
+          Astuce : télécharge un gros dictionnaire FR (wordlist / Scrabble / etc.), et charge-le ici
+          pour avoir “tous les mots”.
+        </div>
+
+        <hr class="divider">
+
+        <div class="attempts-header">
+          <div>
+            <div class="title">2️⃣ Tentatives</div>
+            <div class="attempts-legend">
+              <span class="legend-badge">
+                <span class="legend-swatch legend-grey"></span>⬛ vide → lettre absente
+              </span>
+              <span class="legend-badge">
+                <span class="legend-swatch legend-yellow"></span>🟨 clic 1 → mauvaise place
+              </span>
+              <span class="legend-badge">
+                <span class="legend-swatch legend-green"></span>🟩 clic 2 → bien placée
+              </span>
+            </div>
+          </div>
+          <div>
+            <button id="addAttemptBtn" class="small">
+              <span>＋</span>
+              <span>Ajouter une tentative</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="attemptsContainer" class="attempts-container"></div>
+
+        <div class="warning-text">
+          Ajoute chaque tentative (mot joué), clique sur les lettres pour reproduire exactement les
+          couleurs de ton Motus / Wordle.
+        </div>
+      </section>
+
+      <!-- COLONNE DROITE : Résultats + Stats -->
+      <section class="card right">
+        <h2>3️⃣ Suggestions & probabilités</h2>
+        <div class="hint">
+          Le solver filtre le dictionnaire selon toutes les tentatives et classe les mots restants
+          selon un score de “qualité”.
+        </div>
+
+        <div class="results-header">
+          <div class="results-header-title">Meilleurs mots possibles</div>
+          <button id="solveBtn">
+            <span>🧠</span>
+            <span>Calculer les suggestions</span>
+          </button>
+        </div>
+
+        <div class="results-meta">
+          <span id="resultsCount" class="badge-small">Candidats : 0</span>
+          <span class="badge-small">
+            Score basé sur la fréquence des lettres parmi les solutions encore possibles.
+          </span>
+        </div>
+
+        <div id="constraintsBox" class="constraints-box">
+          Aucune contrainte pour l’instant : ajoute au moins une tentative.
+        </div>
+
+        <div id="resultsBox" class="results-box">
+          <div class="empty">
+            ➜ Charge un dictionnaire, ajoute une ou plusieurs tentatives, puis clique sur
+            “Calculer les suggestions”.
+          </div>
+        </div>
+
+        <div class="info-text">
+          Le score n’est pas une vraie probabilité mathématique, mais un indicateur : plus il est
+          élevé, plus le mot couvre de lettres fréquentes dans les solutions encore possibles.
+        </div>
+
+        <hr class="divider">
+
+        <div class="stats-header">
+          <h3>4️⃣ Historique & statistiques locales</h3>
+          <div class="stats-actions">
+            <button id="markWinBtn" class="small success">
+              ✅ Marquer comme victoire
+            </button>
+            <button id="markLossBtn" class="small danger">
+              ❌ Marquer comme échec
+            </button>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-label">Parties</div>
+            <div id="statTotal" class="stat-value">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Victoires</div>
+            <div id="statWins" class="stat-value">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Défaites</div>
+            <div id="statLosses" class="stat-value">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Winrate</div>
+            <div id="statWinrate" class="stat-value small">
+              0 %
+            </div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Série actuelle</div>
+            <div id="statStreak" class="stat-value">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Meilleure série</div>
+            <div id="statBestStreak" class="stat-value">0</div>
+          </div>
+          <div class="stat-box wide">
+            <div class="stat-label">Moyenne d'essais (victoires)</div>
+            <div id="statAvgGuesses" class="stat-value small">—</div>
+          </div>
+        </div>
+
+        <div class="histogram-container">
+          <div class="histogram-title">Répartition des essais (victoires uniquement)</div>
+          <div id="histogram" class="histogram"></div>
+        </div>
+
+        <div class="history-container">
+          <div class="history-title-row">
+            <div class="history-title">Dernières parties</div>
+            <button id="resetStatsBtn" class="small secondary danger-soft">
+              🔄 Réinitialiser les stats
+            </button>
+          </div>
+          <ul id="historyList" class="history-list"></ul>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
