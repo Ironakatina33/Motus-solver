@@ -54,6 +54,11 @@
         <div class="sidebar-dict" id="dictStats">
           Dictionnaire : <strong>0</strong> mots
         </div>
+          <button id="musicToggle" class="sidebar-music" type="button">
+    🎵 Musique : <span id="musicState">off</span>
+  </button>
+  <audio id="bgMusic" loop src="music.mp3"></audio>
+
         <div class="sidebar-visits">
   👀 Visites totales : <span id="visitTotal">…</span><br>
   🧑‍🤝‍🧑 Visiteurs uniques : <span id="visitUnique">…</span>
@@ -72,11 +77,16 @@
           </p>
         </div>
         <div class="topbar-right">
-          <label class="topbar-size">
-            <span>Taille du mot</span>
-            <input type="number" id="wordLength" min="3" max="12" value="7">
-          </label>
-        </div>
+  <label class="topbar-size">
+    <span>Taille du mot</span>
+    <input type="number" id="wordLength" min="3" max="12" value="7">
+  </label>
+
+  <button id="themeToggle" class="btn btn-ghost btn-xs" type="button">
+    🌙 Mode sombre
+  </button>
+</div>
+
       </header>
 
       <main class="content">
@@ -267,10 +277,11 @@ ETOILES"></textarea>
                 <div class="stat-label">Défaites</div>
                 <div id="statLosses" class="stat-value">0</div>
               </div>
-              <div class="stat-box">
-                <div class="stat-label">Winrate</div>
-                <div id="statWinrate" class="stat-value stat-small">0 %</div>
-              </div>
+             <div class="stat-box stat-box-winrate">
+  <div class="stat-label">Winrate</div>
+  <div id="statWinrate" class="stat-value stat-small">0 %</div>
+</div>
+
               <div class="stat-box">
                 <div class="stat-label">Série actuelle</div>
                 <div id="statStreak" class="stat-value">0</div>

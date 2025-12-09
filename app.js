@@ -877,7 +877,7 @@ gameGuessInput.addEventListener("keydown", (e) => {
     handleGameGuess();
   }
 });
-// ------------ ONGLET / PAGES ------------
+// ------------ ONGLETS (sidebar) ------------
 
 const tabButtons = document.querySelectorAll(".tab-btn");
 const pages = document.querySelectorAll(".page");
@@ -886,15 +886,11 @@ tabButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
     const targetId = btn.dataset.page;
 
-    // activer le bon bouton
     tabButtons.forEach((b) => b.classList.toggle("active", b === btn));
-
-    // afficher la bonne page
-    pages.forEach((p) => {
-      p.classList.toggle("active", p.id === targetId);
-    });
+    pages.forEach((p) => p.classList.toggle("active", p.id === targetId));
   });
 });
+
 // ------------ COMPTEUR DE VISITES (global via CountAPI) ------------
 
 async function initVisitCounters() {
@@ -945,6 +941,71 @@ async function initVisitCounters() {
     uniqueEl.textContent = "N/A";
   }
 }
+// ------------ THÈME SOMBRE / CLAIR ------------
+
+function applyTheme(theme) {
+  document.body.classList.toggle("light-theme", theme === "light");
+  const btn = document.getElementById("themeToggle");
+  if (btn) {
+    btn.textContent =
+      theme === "light" ? "🌞 Mode clair" : "🌙 Mode sombre";
+  }
+}
+
+function initTheme() {
+  const btn = document.getElementById("themeToggle");
+  if (!btn) return;
+
+  const KEY = "motus_theme";
+  let theme = localStorage.getItem(KEY) || "dark";
+
+  applyTheme(theme);
+
+  btn.addEventListener("click", () => {
+    theme = theme === "dark" ? "light" : "dark";
+    localStorage.setItem(KEY, theme);
+    applyTheme(theme);
+  });
+}
+// ------------ MUSIQUE DE FOND ------------
+
+function initMusic() {
+  const btn = document.getElementById("musicToggle");
+  const label = document.getElementById("musicState");
+  const audio = document.getElementById("bgMusic");
+  if (!btn || !label || !audio) return;
+
+  const KEY = "motus_music_enabled";
+  let enabled = localStorage.getItem(KEY) === "1";
+
+  function updateUI() {
+    label.textContent = enabled ? "on" : "off";
+    btn.classList.toggle("sidebar-music-on", enabled);
+  }
+
+  updateUI();
+
+  if (enabled) {
+    audio.volume = 0.4;
+    audio.play().catch(() => {
+      // navigateur qui bloque l'autoplay → l'utilisateur devra cliquer
+    });
+  }
+
+  btn.addEventListener("click", () => {
+    enabled = !enabled;
+    localStorage.setItem(KEY, enabled ? "1" : "0");
+    updateUI();
+
+    if (enabled) {
+      audio.currentTime = 0;
+      audio.volume = 0.4;
+      audio.play().catch(() => {});
+    } else {
+      audio.pause();
+    }
+  });
+}
 
 // ------------ INITIALISATION ------------
 
@@ -952,6 +1013,7 @@ loadStats();
 updateStatsUI();
 addAttemptCard();
 updateDictStats();
-loadEmbeddedFrenchLists(); // tente de charger liste_francais*.txt
-initVisitCounters();
-
+loadEmbeddedFrenchLists();
+initTheme();
+initMusic();
+// initVisitCounters(); // si un jour tu remets un compteur global

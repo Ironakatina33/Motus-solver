@@ -14,6 +14,60 @@
   --red: #f97373;
 }
 
+/* Thème clair : on réécrit les variables quand body a la classe .light-theme */
+body.light-theme {
+  --bg: #f3f4f6;
+  --bg-soft: #e5e7eb;
+  --card: #ffffff;
+  --card-soft: #f9fafb;
+  --accent: #2563eb;
+  --accent-soft: rgba(37, 99, 235, 0.12);
+  --accent-strong: rgba(37, 99, 235, 0.35);
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --border-subtle: #d1d5db;
+  --green: #16a34a;
+  --yellow: #eab308;
+  --red: #ef4444;
+}
+
+/* Fond global en clair */
+body.light-theme {
+  background: radial-gradient(circle at top, #e5e7eb 0, #d1d5db 60%);
+}
+
+/* Boîte principale en clair */
+body.light-theme .shell {
+  background: linear-gradient(145deg, #f9fafb, #e5e7eb);
+  box-shadow:
+    0 24px 70px rgba(15, 23, 42, 0.35),
+    0 0 0 1px rgba(209, 213, 219, 0.9);
+}
+
+/* Sidebar clair */
+body.light-theme .sidebar {
+  background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 65%),
+    #f3f4f6;
+  border-right-color: rgba(209, 213, 219, 0.9);
+}
+
+/* Cartes claires */
+body.light-theme .card {
+  background: radial-gradient(circle at top, rgba(59, 130, 246, 0.08), transparent 60%),
+    var(--card);
+}
+body.light-theme .card-game {
+  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.18), transparent 70%),
+    var(--card);
+}
+
+/* Input / badges adaptent la couleur du texte */
+body.light-theme input,
+body.light-theme textarea {
+  color: var(--text-main);
+}
+
+
 /* RESET & BASE */
 
 *,
@@ -112,6 +166,35 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+.sidebar-music {
+  margin-top: 4px;
+  width: 100%;
+  text-align: left;
+  padding: 4px 8px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(31, 41, 55, 0.9);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-music:hover {
+  background: rgba(31, 41, 55, 0.96);
+}
+
+.sidebar-music-on {
+  border-color: rgba(56, 189, 248, 0.8);
+  color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-strong);
+}
+.stat-box-winrate {
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.18), rgba(15, 23, 42, 0.98));
+  border-color: rgba(34, 197, 94, 0.9);
 }
 
 .tab-btn {
