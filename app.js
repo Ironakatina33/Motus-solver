@@ -42,16 +42,81 @@ let gameTargetLength = 7;
 let gameAttempts = 0;
 let gameCurrentDict = [];
 
-// ------------ AJOUT DE MOTS DEPUIS UN TEXTE ------------
+// ------------ HISTORIQUE DES MOTS AJOUTÉS AU DICTIONNAIRE ------------
+
+// On utilise GLOBAL_DICT comme vraie source de vérité.
+// On garde seulement un historique des derniers mots ajoutés.
+const MAX_HISTORY = 100;
+let dictHistory = [];
+
+try {
+  dictHistory = JSON.parse(localStorage.getItem("motus_dict_history") || "[]");
+} catch (e) {
+  dictHistory = [];
+}
+
+function pushDictHistoryEntries(entries) {
+  if (!entries.length) return;
+  dictHistory = [...entries, ...dictHistory].slice(0, MAX_HISTORY);
+  localStorage.setItem("motus_dict_history", JSON.stringify(dictHistory));
+  renderDictHistory();
+}
+
+function renderDictHistory() {
+  const container = document.getElementById("dictHistoryList");
+  if (!container) return;
+
+  if (!dictHistory.length) {
+    container.innerHTML = `<div class="empty">Aucun mot ajouté pour l’instant.</div>`;
+    return;
+  }
+
+  const rows = dictHistory
+    .map((entry) => {
+      const d = new Date(entry.date || Date.now());
+      const dateStr = d.toLocaleString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      return `
+        <div class="dict-history-item">
+          <span class="dict-history-word">${entry.word}</span>
+          <span class="dict-history-meta">${entry.source || "manuel"} · ${dateStr}</span>
+        </div>
+      `;
+    })
+    .join("");
+
+  container.innerHTML = rows;
+}
+
+function initDictHistoryUI() {
+  const clearBtn = document.getElementById("clearHistoryBtn");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      dictHistory = [];
+      localStorage.removeItem("motus_dict_history");
+      renderDictHistory();
+    });
+  }
+
+  renderDictHistory();
+}
+
 
 /**
  * Ajoute tous les mots trouvés dans un texte brut (un mot par ligne)
  * au dictionnaire global, en les nettoyant (accents, tirets, apostrophes).
  * Retourne le nombre de nouveaux mots ajoutés.
  */
-function addWordsFromTextToGlobalDict(text) {
+function addWordsFromTextToGlobalDict(text, source = "inconnu") {
   const lines = text.split(/\r?\n/);
   let added = 0;
+  const now = Date.now();
+  const newEntries = [];
 
   for (let line of lines) {
     const w = line.trim().toUpperCase();
@@ -66,8 +131,17 @@ function addWordsFromTextToGlobalDict(text) {
     if (simple && /^[A-Z]+$/.test(simple) && !GLOBAL_DICT.has(simple)) {
       GLOBAL_DICT.add(simple);
       added++;
+
+      newEntries.push({
+        word: simple,
+        source,
+        date: now,
+      });
     }
   }
+
+  // Mise à jour de l’historique si on a vraiment ajouté des mots
+  pushDictHistoryEntries(newEntries);
 
   return added;
 }
@@ -277,7 +351,7 @@ dictFileInput.addEventListener("change", (e) => {
   const reader = new FileReader();
   reader.onload = (evt) => {
     const text = evt.target.result || "";
-    const added = addWordsFromTextToGlobalDict(text);
+    const added = addWordsFromTextToGlobalDict(text, `fichier : ${file.name}`);
     updateDictStats();
     alert(
       `Dictionnaire : ${added} nouveaux mots ajoutés (total : ${GLOBAL_DICT.size}).`
@@ -303,7 +377,7 @@ async function loadEmbeddedFrenchLists() {
         continue;
       }
       const text = await res.text();
-      const added = addWordsFromTextToGlobalDict(text);
+      const added = addWordsFromTextToGlobalDict(text, fname);
       total += added;
       console.log(`${fname}: ${added} mots ajoutés.`);
     } catch (e) {
@@ -1016,4 +1090,5 @@ updateDictStats();
 loadEmbeddedFrenchLists();
 initTheme();
 initMusic();
-// initVisitCounters(); // si un jour tu remets un compteur global
+initDictHistoryUI();
+initVisitCounters(); // si un jour tu remets un compteur global

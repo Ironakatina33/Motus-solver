@@ -678,6 +678,75 @@ body {
   gap: 10px;
 }
 
+/* ---------- Historique des mots ajoutés ---------- */
+
+.dict-history {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(31, 41, 55, 0.8);
+}
+
+.dict-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.dict-history-title {
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.dict-history-list {
+  max-height: 140px;
+  overflow-y: auto;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(31, 41, 55, 0.9);
+  padding: 4px 6px;
+  font-size: 0.8rem;
+}
+
+.dict-history-list .empty {
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 4px 2px;
+}
+
+.dict-history-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0;
+  border-bottom: 1px dashed rgba(31, 41, 55, 0.85);
+}
+
+.dict-history-item:last-child {
+  border-bottom: none;
+}
+
+.dict-history-word {
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.dict-history-meta {
+  color: var(--text-muted);
+  font-size: 0.74rem;
+}
+
+/* thème clair : fond plus clair */
+body.light-theme .dict-history-list {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+}
+body.light-theme .dict-history-item {
+  border-bottom-color: #e5e7eb;
+}
+
+
 .step {
   display: flex;
   gap: 8px;
@@ -1107,4 +1176,48 @@ body.light-theme .sidebar-music {
 body.light-theme .sidebar-music.sidebar-music-on {
   border-color: rgba(37, 99, 235, 0.8);
   box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.4);
+}
+/* ---------- STATS EN MODE CLAIR : BLOCS PLUS CLAIRS ---------- */
+
+/* Petites cartes de stats (Parties jouées, Victoires, etc.) */
+body.light-theme .stat-box {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+/* Winrate garde son effet mais en version claire */
+body.light-theme .stat-box-winrate {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.14), #f9fafb);
+  border-color: rgba(34, 197, 94, 0.7);
+}
+
+/* Gros panneaux du bas : histogramme + dernières parties */
+body.light-theme .stats-panel {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+/* Zone "Répartition des essais" (histogramme) */
+body.light-theme .histogram {
+  /* rien à changer ici, juste le panel autour */
+}
+
+/* Liste des dernières parties : garder texte lisible */
+body.light-theme .history-list {
+  color: var(--text-main);
+}
+
+/* Petits badges Victoire / Défaite en version claire */
+body.light-theme .history-badge {
+  border-color: rgba(148, 163, 184, 0.7);
+}
+
+body.light-theme .history-badge.win {
+  background: rgba(22, 163, 74, 0.12);
+  color: #166534;
+}
+
+body.light-theme .history-badge.loss {
+  background: rgba(248, 113, 113, 0.12);
+  color: #b91c1c;
 }
