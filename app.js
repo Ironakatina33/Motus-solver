@@ -1015,14 +1015,31 @@ async function initVisitCounters() {
     uniqueEl.textContent = "N/A";
   }
 }
-// ------------ THÈME SOMBRE / CLAIR ------------
+// ------------ THÈME : SOMBRE / CLAIR / NÉON ------------
+
+const THEME_KEY = "motus_theme";
+const THEMES = ["dark", "light", "neon"]; // ordre de rotation
 
 function applyTheme(theme) {
-  document.body.classList.toggle("light-theme", theme === "light");
+  // reset classes
+  document.body.classList.remove("light-theme", "neon-theme");
+
+  if (theme === "light") {
+    document.body.classList.add("light-theme");
+  } else if (theme === "neon") {
+    document.body.classList.add("neon-theme");
+  }
+  // "dark" = aucune classe spéciale (sombre par défaut)
+
   const btn = document.getElementById("themeToggle");
-  if (btn) {
-    btn.textContent =
-      theme === "light" ? "🌞 Mode clair" : "🌙 Mode sombre";
+  if (!btn) return;
+
+  if (theme === "dark") {
+    btn.textContent = "🌙 Mode sombre";
+  } else if (theme === "light") {
+    btn.textContent = "🌞 Mode clair";
+  } else if (theme === "neon") {
+    btn.textContent = "🌈 Mode néon";
   }
 }
 
@@ -1030,17 +1047,23 @@ function initTheme() {
   const btn = document.getElementById("themeToggle");
   if (!btn) return;
 
-  const KEY = "motus_theme";
-  let theme = localStorage.getItem(KEY) || "dark";
+  let theme = localStorage.getItem(THEME_KEY);
+  if (!THEMES.includes(theme)) {
+    theme = "dark"; // thème par défaut
+  }
 
   applyTheme(theme);
 
   btn.addEventListener("click", () => {
-    theme = theme === "dark" ? "light" : "dark";
-    localStorage.setItem(KEY, theme);
+    const currentIndex = THEMES.indexOf(theme);
+    const nextIndex = (currentIndex + 1) % THEMES.length;
+    theme = THEMES[nextIndex];
+
+    localStorage.setItem(THEME_KEY, theme);
     applyTheme(theme);
   });
 }
+
 // ------------ MUSIQUE DE FOND ------------
 
 function initMusic() {
@@ -1091,4 +1114,3 @@ loadEmbeddedFrenchLists();
 initTheme();
 initMusic();
 initDictHistoryUI();
-initVisitCounters(); // si un jour tu remets un compteur global
