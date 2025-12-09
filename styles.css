@@ -1068,3 +1068,43 @@ textarea:focus {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+/* ---------- FIX VISUEL MODE CLAIR ---------- */
+
+/* Badges (statut partie, astuce, etc.) */
+body.light-theme .badge-neutral,
+body.light-theme .badge-soft {
+  background: #111827;            /* fond bien sombre */
+  border-color: #1f2937;
+  color: #e5e7eb;                 /* texte clair */
+}
+
+/* Zone de jeu Motus (grille + message) */
+body.light-theme .game-grid {
+  background: #0b1220;
+  border-color: #111827;
+}
+
+body.light-theme .game-empty,
+body.light-theme .game-message {
+  color: #e5e7eb;
+}
+
+/* Tuiles de la grille en clair : garder du contraste */
+body.light-theme .game-tile {
+  background: #111827;
+  border-color: #1f2937;
+  color: #e5e7eb;
+}
+
+/* Bouton musique en bas à gauche */
+body.light-theme .sidebar-music {
+  background: #111827;
+  border-color: #1f2937;
+  color: #e5e7eb;
+}
+
+/* Quand la musique est ON en clair */
+body.light-theme .sidebar-music.sidebar-music-on {
+  border-color: rgba(37, 99, 235, 0.8);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.4);
+}
