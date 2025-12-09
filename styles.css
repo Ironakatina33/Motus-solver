@@ -76,8 +76,9 @@ body.light-theme textarea {
   box-sizing: border-box;
 }
 
-html {
-  font-size: 15px;
+html,
+body {
+  height: 100%;
 }
 
 body {
@@ -88,6 +89,7 @@ body {
   color: var(--text-main);
   display: flex;
   justify-content: center;
+  align-items: stretch;         /* la shell prend toute la hauteur */
   padding: 18px 10px;
   animation: fadeInBody 0.3s ease-out;
 }
@@ -116,7 +118,9 @@ body {
   box-shadow:
     0 28px 80px rgba(15, 23, 42, 0.85),
     0 0 0 1px rgba(15, 23, 42, 0.9);
+  min-height: 100vh;            /* ⚠️ importante */
 }
+
 
 /* SIDEBAR */
 
@@ -425,24 +429,56 @@ body {
 }
 
 @media (max-width: 880px) {
-  .shell {
-    flex-direction: column;
+  /* la page prend vraiment tout l’écran sur mobile */
+  body {
+    padding: 0;
   }
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px 14px;
+  overflow-y: auto;   /* ✅ si le contenu dépasse, la colonne défile */
+}
+.sidebar {
+  overflow: hidden;
+}
+
+  .shell {
+    max-width: none;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    min-height: 100vh;
+  }
+
+  /* sidebar en haut, en bandeau */
   .sidebar {
     width: 100%;
     flex-direction: row;
     align-items: center;
+    padding: 10px 10px 6px;
   }
+
   .sidebar-nav {
     flex-direction: row;
+    flex: 1;
+    justify-content: center;
   }
+
   .sidebar-footer {
-    display: none;
+    display: none; /* on gagne de la place en bas sur mobile */
   }
+
+  .main {
+    padding: 8px 10px 10px;
+  }
+
   .layout-two-cols {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
 
 /* BOUTONS */
 
