@@ -1015,12 +1015,70 @@ async function initVisitCounters() {
     uniqueEl.textContent = "N/A";
   }
 }
-// ------------ THÈME : SOMBRE / CLAIR / NÉON ------------
+// ------------ THÈME : SOMBRE / CLAIR / NÉON + MUSIQUE ------------
 
 const THEME_KEY = "motus_theme";
 const THEMES = ["dark", "light", "neon"]; // ordre de rotation
 
+const MUSIC_KEY = "motus_music_enabled";
+let musicEnabled = false;
+let currentTheme = "dark"; // valeur par défaut
+
+async function updateMusicTrack() {
+  const audio = document.getElementById("bgMusic");
+  if (!audio) return;
+
+  const newSrc = currentTheme === "neon" ? "Music_2.mp3" : "Music_1.mp3";
+  const wasPlaying = !audio.paused && musicEnabled;
+
+  // Si c'est déjà le bon fichier, rien à changer
+  if (audio.getAttribute("src") === newSrc) {
+    if (musicEnabled && audio.paused) audio.play().catch(() => {});
+    return;
+  }
+
+  // FADE OUT (0.4s → 0 volume)
+  if (wasPlaying) {
+    await fadeVolume(audio, 0, 400);
+  }
+
+  // Changer la piste
+  audio.setAttribute("src", newSrc);
+  audio.load();
+
+  // FADE IN (0 → 0.4 volume)
+  if (musicEnabled) {
+    audio.volume = 0;
+    try {
+      await audio.play();
+      await fadeVolume(audio, 0.4, 500);
+    } catch (e) {}
+  }
+}
+function fadeVolume(audio, targetVolume, duration) {
+  return new Promise(resolve => {
+    const startVolume = audio.volume;
+    const startTime = performance.now();
+
+    function step(now) {
+      const progress = Math.min((now - startTime) / duration, 1);
+      audio.volume = startVolume + (targetVolume - startVolume) * progress;
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        resolve();
+      }
+    }
+
+    requestAnimationFrame(step);
+  });
+}
+
+
 function applyTheme(theme) {
+  currentTheme = theme;
+
   // reset classes
   document.body.classList.remove("light-theme", "neon-theme");
 
@@ -1029,18 +1087,21 @@ function applyTheme(theme) {
   } else if (theme === "neon") {
     document.body.classList.add("neon-theme");
   }
-  // "dark" = aucune classe spéciale (sombre par défaut)
+  // "dark" = aucune classe spéciale
 
   const btn = document.getElementById("themeToggle");
-  if (!btn) return;
-
-  if (theme === "dark") {
-    btn.textContent = "🌙 Mode sombre";
-  } else if (theme === "light") {
-    btn.textContent = "🌞 Mode clair";
-  } else if (theme === "neon") {
-    btn.textContent = "🌈 Mode néon";
+  if (btn) {
+    if (theme === "dark") {
+      btn.textContent = "🌙 Mode sombre";
+    } else if (theme === "light") {
+      btn.textContent = "🌞 Mode clair";
+    } else if (theme === "neon") {
+      btn.textContent = "🌈 Mode néon";
+    }
   }
+
+  // adapter la musique au thème courant
+  updateMusicTrack();
 }
 
 function initTheme() {
@@ -1049,7 +1110,7 @@ function initTheme() {
 
   let theme = localStorage.getItem(THEME_KEY);
   if (!THEMES.includes(theme)) {
-    theme = "dark"; // thème par défaut
+    theme = "dark"; // par défaut
   }
 
   applyTheme(theme);
@@ -1064,45 +1125,37 @@ function initTheme() {
   });
 }
 
-// ------------ MUSIQUE DE FOND ------------
-
 function initMusic() {
   const btn = document.getElementById("musicToggle");
   const label = document.getElementById("musicState");
   const audio = document.getElementById("bgMusic");
   if (!btn || !label || !audio) return;
 
-  const KEY = "motus_music_enabled";
-  let enabled = localStorage.getItem(KEY) === "1";
+  musicEnabled = localStorage.getItem(MUSIC_KEY) === "1";
 
   function updateUI() {
-    label.textContent = enabled ? "on" : "off";
-    btn.classList.toggle("sidebar-music-on", enabled);
+    label.textContent = musicEnabled ? "on" : "off";
+    btn.classList.toggle("sidebar-music-on", musicEnabled);
   }
 
+  // mettre la bonne piste selon le thème + état
   updateUI();
-
-  if (enabled) {
-    audio.volume = 0.4;
-    audio.play().catch(() => {
-      // navigateur qui bloque l'autoplay → l'utilisateur devra cliquer
-    });
-  }
+  updateMusicTrack();
 
   btn.addEventListener("click", () => {
-    enabled = !enabled;
-    localStorage.setItem(KEY, enabled ? "1" : "0");
+    musicEnabled = !musicEnabled;
+    localStorage.setItem(MUSIC_KEY, musicEnabled ? "1" : "0");
     updateUI();
 
-    if (enabled) {
+    if (musicEnabled) {
       audio.currentTime = 0;
-      audio.volume = 0.4;
-      audio.play().catch(() => {});
+      updateMusicTrack();
     } else {
       audio.pause();
     }
   });
 }
+
 
 // ------------ INITIALISATION ------------
 
