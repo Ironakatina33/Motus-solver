@@ -902,6 +902,18 @@ textarea:focus {
   font-size: 0.78rem;
 }
 
+.sidebar-visits {
+  margin-top: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(31, 41, 55, 0.9);
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+
 .history-item {
   display: flex;
   justify-content: space-between;

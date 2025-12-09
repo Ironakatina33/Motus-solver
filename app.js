@@ -895,6 +895,56 @@ tabButtons.forEach((btn) => {
     });
   });
 });
+// ------------ COMPTEUR DE VISITES (global via CountAPI) ------------
+
+async function initVisitCounters() {
+  const totalEl = document.getElementById("visitTotal");
+  const uniqueEl = document.getElementById("visitUnique");
+  if (!totalEl || !uniqueEl) return;
+
+  // Identifiants pour ton site (change si tu veux un autre namespace)
+  const NAMESPACE = "motuslab_yukolive";
+  const TOTAL_KEY = "visits_total";
+  const UNIQUE_KEY = "visits_unique";
+
+  // Helper pour faire des requêtes CountAPI
+  async function hit(namespace, key) {
+    const url = `https://api.countapi.xyz/hit/${namespace}/${key}`;
+    const res = await fetch(url);
+    return res.json();
+  }
+
+  async function get(namespace, key) {
+    const url = `https://api.countapi.xyz/get/${namespace}/${key}`;
+    const res = await fetch(url);
+    return res.json();
+  }
+
+  try {
+    // 1️⃣ Visites totales : on incrémente à chaque chargement
+    const totalData = await hit(NAMESPACE, TOTAL_KEY);
+    totalEl.textContent = totalData.value ?? "—";
+
+    // 2️⃣ Visiteurs uniques (par navigateur)
+    const UNIQUE_FLAG = "motuslab_unique_seen";
+    let uniqueData;
+
+    if (!localStorage.getItem(UNIQUE_FLAG)) {
+      // Première fois sur ce navigateur → on incrémente
+      uniqueData = await hit(NAMESPACE, UNIQUE_KEY);
+      localStorage.setItem(UNIQUE_FLAG, "1");
+    } else {
+      // Déjà venu sur ce navigateur → on lit juste la valeur
+      uniqueData = await get(NAMESPACE, UNIQUE_KEY);
+    }
+
+    uniqueEl.textContent = uniqueData.value ?? "—";
+  } catch (e) {
+    console.error("Erreur compteur de visites", e);
+    totalEl.textContent = "N/A";
+    uniqueEl.textContent = "N/A";
+  }
+}
 
 // ------------ INITIALISATION ------------
 
@@ -903,3 +953,5 @@ updateStatsUI();
 addAttemptCard();
 updateDictStats();
 loadEmbeddedFrenchLists(); // tente de charger liste_francais*.txt
+initVisitCounters();
+
