@@ -11,8 +11,7 @@
       <div>
         <h1><span class="logo-dot"></span> Solver Motus / Wordle FR</h1>
         <div class="subtitle">
-          Règle les couleurs, charge un dictionnaire français, laisse le solver filtrer,
-          proposer les meilleurs mots et garde tes stats de parties.
+          Joue au Motus, laisse le solver proposer les meilleurs mots et suis tes stats de parties.
         </div>
       </div>
       <div class="pill-row">
@@ -74,7 +73,7 @@ ETOILES"></textarea>
 
         <div class="attempts-header">
           <div>
-            <div class="title">2️⃣ Tentatives</div>
+            <div class="title">2️⃣ Tentatives (pour le solver)</div>
             <div class="attempts-legend">
               <span class="legend-badge">
                 <span class="legend-swatch legend-grey"></span>⬛ vide → lettre absente
@@ -98,13 +97,45 @@ ETOILES"></textarea>
         <div id="attemptsContainer" class="attempts-container"></div>
 
         <div class="warning-text">
-          Ajoute chaque tentative (mot joué), clique sur les lettres pour reproduire exactement les
-          couleurs de ton Motus / Wordle.
+          Ajoute chaque tentative (mot joué dans un vrai Motus / Wordle), clique sur les lettres
+          pour reproduire exactement les couleurs, puis lance le solver.
         </div>
       </section>
 
-      <!-- COLONNE DROITE : Résultats + Stats -->
+      <!-- COLONNE DROITE : Jeu Motus + Solver + Stats -->
       <section class="card right">
+
+        <!-- 0️⃣ JEU MOTUS INTÉGRÉ -->
+        <h2>0️⃣ Jeu Motus intégré</h2>
+        <div class="hint">
+          Joue directement ici : mot secret aléatoire, 6 essais, couleurs automatiques, stats mises à jour.
+        </div>
+
+        <div class="game-header">
+          <span id="gameStatus" class="badge-small">Aucune partie en cours</span>
+          <button id="newGameBtn" class="small success">
+            🎮 Nouvelle partie
+          </button>
+        </div>
+
+        <div id="gameGrid" class="game-grid">
+          <div class="game-empty">Clique sur “Nouvelle partie” pour commencer.</div>
+        </div>
+
+        <div class="game-input-row">
+          <input
+            type="text"
+            id="gameGuessInput"
+            placeholder="Tape un mot et appuie sur Entrée"
+            autocomplete="off"
+          >
+          <button id="gameGuessBtn" class="small">Valider</button>
+        </div>
+        <div id="gameMessage" class="game-message"></div>
+
+        <hr class="divider">
+
+        <!-- 3️⃣ SOLVER -->
         <h2>3️⃣ Suggestions & probabilités</h2>
         <div class="hint">
           Le solver filtre le dictionnaire selon toutes les tentatives et classe les mots restants
@@ -132,26 +163,27 @@ ETOILES"></textarea>
 
         <div id="resultsBox" class="results-box">
           <div class="empty">
-            ➜ Charge un dictionnaire, ajoute une ou plusieurs tentatives, puis clique sur
+            ➜ Ajoute quelques tentatives (ou joue une partie) puis clique sur
             “Calculer les suggestions”.
           </div>
         </div>
 
         <div class="info-text">
-          Le score n’est pas une vraie probabilité mathématique, mais un indicateur : plus il est
-          élevé, plus le mot couvre de lettres fréquentes dans les solutions encore possibles.
+          Le score n’est pas une vraie probabilité mathématique, mais un indicateur :
+          plus il est élevé, plus le mot couvre de lettres fréquentes dans les solutions encore possibles.
         </div>
 
         <hr class="divider">
 
+        <!-- 4️⃣ STATS -->
         <div class="stats-header">
           <h3>4️⃣ Historique & statistiques locales</h3>
           <div class="stats-actions">
             <button id="markWinBtn" class="small success">
-              ✅ Marquer comme victoire
+              ✅ Marquer comme victoire (manuel)
             </button>
             <button id="markLossBtn" class="small danger">
-              ❌ Marquer comme échec
+              ❌ Marquer comme échec (manuel)
             </button>
           </div>
         </div>

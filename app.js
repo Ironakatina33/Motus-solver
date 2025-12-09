@@ -34,6 +34,16 @@ let GLOBAL_DICT = new Set(BUILTIN_SMALL);
 let attemptsCounter = 0;
 let stats = null;
 
+// Jeu Motus intégré
+const GAME_MAX_ATTEMPTS = 6;
+let gameActive = false;
+let gameSecretWord = null;
+let gameTargetLength = 7;
+let gameAttempts = 0;
+let gameCurrentDict = [];
+
+// ------------ AJOUT DE MOTS DEPUIS UN TEXTE ------------
+
 /**
  * Ajoute tous les mots trouvés dans un texte brut (un mot par ligne)
  * au dictionnaire global, en les nettoyant (accents, tirets, apostrophes).
@@ -62,7 +72,6 @@ function addWordsFromTextToGlobalDict(text) {
   return added;
 }
 
-
 // ------------ RÉFÉRENCES DOM ------------
 
 const wordLengthInput = document.getElementById("wordLength");
@@ -76,6 +85,7 @@ const resultsBox = document.getElementById("resultsBox");
 const resultsCount = document.getElementById("resultsCount");
 const constraintsBox = document.getElementById("constraintsBox");
 
+// Stats
 const markWinBtn = document.getElementById("markWinBtn");
 const markLossBtn = document.getElementById("markLossBtn");
 const resetStatsBtn = document.getElementById("resetStatsBtn");
@@ -90,7 +100,15 @@ const statAvgGuesses = document.getElementById("statAvgGuesses");
 const histogramDiv = document.getElementById("histogram");
 const historyList = document.getElementById("historyList");
 
-// ------------ INIT STATS ------------
+// Jeu Motus
+const newGameBtn = document.getElementById("newGameBtn");
+const gameGrid = document.getElementById("gameGrid");
+const gameGuessInput = document.getElementById("gameGuessInput");
+const gameGuessBtn = document.getElementById("gameGuessBtn");
+const gameMessage = document.getElementById("gameMessage");
+const gameStatus = document.getElementById("gameStatus");
+
+// ------------ STATS (localStorage) ------------
 
 function loadStats() {
   try {
@@ -109,7 +127,7 @@ function loadStats() {
     } else {
       stats = JSON.parse(raw);
     }
-  } catch (e) {
+  } catch {
     stats = {
       totalGames: 0,
       wins: 0,
@@ -183,7 +201,7 @@ function updateStatsUI() {
       '<span class="history-meta">Aucune partie enregistrée pour l’instant.</span>';
     historyList.appendChild(li);
   } else {
-    const lastGames = stats.games.slice(-12).reverse(); // dernières d’abord
+    const lastGames = stats.games.slice(-12).reverse();
     lastGames.forEach((g) => {
       const li = document.createElement("li");
       li.className = "history-item";
@@ -251,7 +269,7 @@ function updateDictStats() {
   dictStats.innerHTML = `Mots chargés : <strong>${GLOBAL_DICT.size}</strong>`;
 }
 
-// Lecture fichier .txt (dictionnaire)
+// Bouton "Dictionnaire (.txt)" manuel
 dictFileInput.addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -268,28 +286,39 @@ dictFileInput.addEventListener("change", (e) => {
   reader.readAsText(file, "utf-8");
 });
 
-// Essaie de charger automatiquement un fichier "liste_francais.txt"
-// placé à côté de index.html (même dossier).
-async function loadEmbeddedFrenchList() {
-  try {
-    const res = await fetch("liste_francais.txt"); // adapte le nom si besoin
-    if (!res.ok) {
-      console.warn("liste_francais.txt non trouvée (ce n'est pas grave).");
-      return;
-    }
-    const text = await res.text();
-    const added = addWordsFromTextToGlobalDict(text);
-    updateDictStats();
-    console.log(`Liste francais intégrée : ${added} mots ajoutés.`);
-  } catch (e) {
-    console.warn(
-      "Impossible de charger la liste_francais.txt (limitation navigateur / protocole file:// ?)",
-      e
-    );
-  }
-}
+// Chargement automatique de 3 listes : liste_francais*.txt
+async function loadEmbeddedFrenchLists() {
+  const files = [
+    "liste_francais.txt",
+    "liste_francais2.txt",
+    "liste_francais3.txt",
+  ];
+  let total = 0;
 
-updateDictStats();
+  for (const fname of files) {
+    try {
+      const res = await fetch(fname);
+      if (!res.ok) {
+        console.warn(`${fname} non trouvée (ce n'est pas grave).`);
+        continue;
+      }
+      const text = await res.text();
+      const added = addWordsFromTextToGlobalDict(text);
+      total += added;
+      console.log(`${fname}: ${added} mots ajoutés.`);
+    } catch (e) {
+      console.warn(
+        `Impossible de charger ${fname} (souvent bloqué en file://).`,
+        e
+      );
+    }
+  }
+
+  if (total > 0) {
+    console.log(`Listes FR intégrées : ${total} mots ajoutés.`);
+  }
+  updateDictStats();
+}
 
 function buildDictionaryForLength(targetLength) {
   const dict = new Set();
@@ -322,7 +351,7 @@ function buildDictionaryForLength(targetLength) {
   return Array.from(dict);
 }
 
-// ------------ TENTATIVES ------------
+// ------------ TENTATIVES (solver) ------------
 
 addAttemptBtn.addEventListener("click", () => {
   addAttemptCard();
@@ -461,7 +490,7 @@ function solve() {
     return;
   }
 
-  // Fréquences de lettres sur les candidats
+  // Fréquences de lettres
   const letterFreq = {};
   candidates.forEach((w) => {
     const unique = new Set(w.split(""));
@@ -618,7 +647,7 @@ function updateConstraintsBox(c) {
   `;
 }
 
-// ------------ BOUTONS STATS (victoire / défaite) ------------
+// ------------ BOUTONS STATS (manuel) ------------
 
 function computeCurrentAttemptsAndLength() {
   const cards = Array.from(document.querySelectorAll(".attempt-card"));
@@ -673,12 +702,186 @@ resetStatsBtn.addEventListener("click", () => {
   }
 });
 
-// ------------ INITIALISATION ------------
+// ------------ JEU MOTUS INTÉGRÉ ------------
+
+function setGameMessage(msg, type = "info") {
+  gameMessage.textContent = msg;
+  gameMessage.className = "game-message " + type;
+}
+
+function shakeElement(el) {
+  if (!el) return;
+  el.classList.remove("shake");
+  void el.offsetWidth;
+  el.classList.add("shake");
+}
+
+function buildEmptyGameGrid(len) {
+  gameGrid.innerHTML = "";
+  for (let r = 0; r < GAME_MAX_ATTEMPTS; r++) {
+    const row = document.createElement("div");
+    row.className = "game-row";
+    for (let c = 0; c < len; c++) {
+      const tile = document.createElement("div");
+      tile.className = "game-tile grey";
+      row.appendChild(tile);
+    }
+    gameGrid.appendChild(row);
+  }
+}
+
+function evaluateGuess(secret, guess) {
+  const len = secret.length;
+  const res = new Array(len).fill("grey");
+  const counts = {};
+
+  for (let i = 0; i < len; i++) {
+    const ch = secret[i];
+    counts[ch] = (counts[ch] || 0) + 1;
+  }
+
+  // verts
+  for (let i = 0; i < len; i++) {
+    if (guess[i] === secret[i]) {
+      res[i] = "green";
+      counts[guess[i]]--;
+    }
+  }
+
+  // jaunes
+  for (let i = 0; i < len; i++) {
+    if (res[i] !== "grey") continue;
+    const ch = guess[i];
+    if (counts[ch] > 0) {
+      res[i] = "yellow";
+      counts[ch]--;
+    }
+  }
+
+  return res;
+}
+
+function startNewGame() {
+  let len = parseInt(wordLengthInput.value || "0", 10);
+  if (!len || isNaN(len)) len = 7;
+
+  const dict = buildDictionaryForLength(len);
+  if (dict.length === 0) {
+    alert(
+      `Aucun mot disponible pour ${len} lettres. Charge un dictionnaire ou change la taille.`
+    );
+    return;
+  }
+
+  gameCurrentDict = dict;
+  gameSecretWord = dict[Math.floor(Math.random() * dict.length)];
+  gameTargetLength = len;
+  gameAttempts = 0;
+  gameActive = true;
+
+  buildEmptyGameGrid(len);
+  gameGuessInput.value = "";
+  gameGuessInput.maxLength = len;
+  gameGuessInput.focus();
+
+  setGameMessage(
+    `Partie en cours : mot de ${len} lettres. Tu as ${GAME_MAX_ATTEMPTS} essais.`,
+    "info"
+  );
+  gameStatus.textContent = `Partie en cours · ${len} lettres`;
+  gameStatus.classList.remove("danger-status");
+  gameStatus.classList.add("success-status");
+}
+
+function handleGameGuess() {
+  if (!gameActive) {
+    setGameMessage("Aucune partie en cours. Clique sur “Nouvelle partie”.", "error");
+    shakeElement(gameGrid);
+    return;
+  }
+
+  const guess = (gameGuessInput.value || "").trim().toUpperCase();
+  if (guess.length !== gameTargetLength) {
+    setGameMessage(
+      `Le mot doit faire ${gameTargetLength} lettres.`,
+      "error"
+    );
+    shakeElement(gameGuessInput);
+    return;
+  }
+
+  if (!gameCurrentDict.includes(guess)) {
+    setGameMessage("Mot non trouvé dans le dictionnaire chargé.", "error");
+    shakeElement(gameGuessInput);
+    return;
+  }
+
+  const pattern = evaluateGuess(gameSecretWord, guess);
+  const row = gameGrid.children[gameAttempts];
+  const tiles = Array.from(row.children);
+  for (let i = 0; i < gameTargetLength; i++) {
+    tiles[i].textContent = guess[i];
+    tiles[i].classList.remove("grey", "yellow", "green");
+    tiles[i].classList.add(pattern[i]);
+  }
+
+  gameAttempts++;
+
+  if (guess === gameSecretWord) {
+    gameActive = false;
+    setGameMessage(
+      `Bravo ! Tu as trouvé ${gameSecretWord} en ${gameAttempts} essai${
+        gameAttempts > 1 ? "s" : ""
+      }.`,
+      "success"
+    );
+    gameStatus.textContent = `Victoire en ${gameAttempts} essai${
+      gameAttempts > 1 ? "s" : ""
+    }`;
+    gameStatus.classList.remove("danger-status");
+    gameStatus.classList.add("success-status");
+    recordGame(true, gameAttempts, gameTargetLength);
+    return;
+  }
+
+  if (gameAttempts >= GAME_MAX_ATTEMPTS) {
+    gameActive = false;
+    setGameMessage(
+      `Raté... Le mot était ${gameSecretWord}.`,
+      "error"
+    );
+    gameStatus.textContent = "Défaite";
+    gameStatus.classList.remove("success-status");
+    gameStatus.classList.add("danger-status");
+    recordGame(false, GAME_MAX_ATTEMPTS, gameTargetLength);
+    return;
+  }
+
+  const remaining = GAME_MAX_ATTEMPTS - gameAttempts;
+  setGameMessage(
+    `Pas encore ! Il te reste ${remaining} essai${
+      remaining > 1 ? "s" : ""
+    }.`,
+    "info"
+  );
+  gameGuessInput.value = "";
+  gameGuessInput.focus();
+}
+
+// listeners jeu
+newGameBtn.addEventListener("click", startNewGame);
+gameGuessBtn.addEventListener("click", handleGameGuess);
+gameGuessInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    handleGameGuess();
+  }
+});
 
 // ------------ INITIALISATION ------------
 
 loadStats();
 updateStatsUI();
 addAttemptCard();
-updateDictStats();      // stats du petit built-in
-loadEmbeddedFrenchList(); // on essaie de charger liste_francais.txt
+updateDictStats();
+loadEmbeddedFrenchLists(); // tente de charger liste_francais*.txt
