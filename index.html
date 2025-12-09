@@ -11,7 +11,7 @@
       <div>
         <h1><span class="logo-dot"></span> Solver Motus / Wordle FR</h1>
         <div class="subtitle">
-          Joue au Motus, laisse le solver proposer les meilleurs mots et suis tes stats de parties.
+          Joue au Motus, utilise le solveur et suis tes stats, le tout sans perdre ta progression.
         </div>
       </div>
       <div class="pill-row">
@@ -30,212 +30,230 @@
       </div>
     </header>
 
+    <!-- BARRE D'ONGLETS -->
+    <nav class="tabs">
+      <button class="tab-btn active" data-page="pageGame">🎮 Motus</button>
+      <button class="tab-btn" data-page="pageSolver">🧠 Solveur</button>
+      <button class="tab-btn" data-page="pageStats">📊 Stats</button>
+    </nav>
+
     <main>
-      <!-- COLONNE GAUCHE : Dictionnaire + Tentatives -->
-      <section class="card">
-        <h2>1️⃣ Paramètres & dictionnaire</h2>
-        <div class="hint">
-          Choisis la taille du mot et charge un dictionnaire français (fichier .txt, un mot par ligne).
-        </div>
-
-        <div class="field-row">
-          <label for="wordLength">Taille du mot :</label>
-          <input type="number" id="wordLength" min="3" max="12" value="7" style="width:70px;">
-          <span class="info-text">
-            Si tu laisses vide, la taille sera déduite automatiquement du premier mot saisi.
-          </span>
-        </div>
-
-        <div class="field-row">
-          <div class="file-input">
-            <label for="dictFile">Dictionnaire (.txt) :</label><br>
-            <input type="file" id="dictFile" accept=".txt">
+      <!-- PAGE MOTUS -->
+      <div id="pageGame" class="page active">
+        <section class="card right">
+          <h2>🎮 Jeu Motus intégré</h2>
+          <div class="hint">
+            Mot secret aléatoire, 6 essais, couleurs automatiques et stats mises à jour automatiquement.
           </div>
-          <span id="dictStats" class="stat-tag">Mots chargés : <strong>0</strong></span>
-        </div>
 
-        <div class="field-row" style="align-items:flex-start;">
-          <div style="flex:1 1 auto;">
-            <label for="customDict">Mots supplémentaires (optionnel) :</label>
-            <textarea id="customDict" placeholder="Un mot par ligne, par ex. :
+          <div class="game-header">
+            <span id="gameStatus" class="badge-small">Aucune partie en cours</span>
+            <button id="newGameBtn" class="small success">
+              🎮 Nouvelle partie
+            </button>
+          </div>
+
+          <div id="gameGrid" class="game-grid">
+            <div class="game-empty">Clique sur “Nouvelle partie” pour commencer.</div>
+          </div>
+
+          <div class="game-input-row">
+            <input
+              type="text"
+              id="gameGuessInput"
+              placeholder="Tape un mot et appuie sur Entrée"
+              autocomplete="off"
+            >
+            <button id="gameGuessBtn" class="small">Valider</button>
+          </div>
+          <div id="gameMessage" class="game-message"></div>
+
+          <div class="info-text">
+            La taille du mot de Motus est basée sur le champ “Taille du mot” (ou 7 par défaut).
+          </div>
+        </section>
+      </div>
+
+      <!-- PAGE SOLVEUR -->
+      <div id="pageSolver" class="page">
+        <section class="card">
+          <h2>1️⃣ Paramètres & dictionnaire (Solveur)</h2>
+          <div class="hint">
+            Choisis la taille du mot et charge un dictionnaire français (liste_francais*.txt est chargée automatiquement si possible).
+          </div>
+
+          <div class="field-row">
+            <label for="wordLength">Taille du mot :</label>
+            <input type="number" id="wordLength" min="3" max="12" value="7" style="width:70px;">
+            <span class="info-text">
+              Si tu laisses vide, la taille sera déduite automatiquement du premier mot saisi.
+            </span>
+          </div>
+
+          <div class="field-row">
+            <div class="file-input">
+              <label for="dictFile">Dictionnaire (.txt) :</label><br>
+              <input type="file" id="dictFile" accept=".txt">
+            </div>
+            <span id="dictStats" class="stat-tag">Mots chargés : <strong>0</strong></span>
+          </div>
+
+          <div class="field-row" style="align-items:flex-start;">
+            <div style="flex:1 1 auto;">
+              <label for="customDict">Mots supplémentaires (optionnel) :</label>
+              <textarea id="customDict" placeholder="Un mot par ligne, par ex. :
 ENIGMES
 EPINEUX
 ETOILES"></textarea>
-          </div>
-        </div>
-
-        <div class="info-text">
-          Astuce : télécharge un gros dictionnaire FR (wordlist / Scrabble / etc.), et charge-le ici
-          pour avoir “tous les mots”.
-        </div>
-
-        <hr class="divider">
-
-        <div class="attempts-header">
-          <div>
-            <div class="title">2️⃣ Tentatives (pour le solver)</div>
-            <div class="attempts-legend">
-              <span class="legend-badge">
-                <span class="legend-swatch legend-grey"></span>⬛ vide → lettre absente
-              </span>
-              <span class="legend-badge">
-                <span class="legend-swatch legend-yellow"></span>🟨 clic 1 → mauvaise place
-              </span>
-              <span class="legend-badge">
-                <span class="legend-swatch legend-green"></span>🟩 clic 2 → bien placée
-              </span>
             </div>
           </div>
-          <div>
-            <button id="addAttemptBtn" class="small">
-              <span>＋</span>
-              <span>Ajouter une tentative</span>
-            </button>
+
+          <div class="info-text">
+            Astuce : télécharge un gros dictionnaire FR (wordlist / Scrabble / etc.), et charge-le ici
+            pour avoir “tous les mots”.
           </div>
-        </div>
 
-        <div id="attemptsContainer" class="attempts-container"></div>
+          <hr class="divider">
 
-        <div class="warning-text">
-          Ajoute chaque tentative (mot joué dans un vrai Motus / Wordle), clique sur les lettres
-          pour reproduire exactement les couleurs, puis lance le solver.
-        </div>
-      </section>
-
-      <!-- COLONNE DROITE : Jeu Motus + Solver + Stats -->
-      <section class="card right">
-
-        <!-- 0️⃣ JEU MOTUS INTÉGRÉ -->
-        <h2>0️⃣ Jeu Motus intégré</h2>
-        <div class="hint">
-          Joue directement ici : mot secret aléatoire, 6 essais, couleurs automatiques, stats mises à jour.
-        </div>
-
-        <div class="game-header">
-          <span id="gameStatus" class="badge-small">Aucune partie en cours</span>
-          <button id="newGameBtn" class="small success">
-            🎮 Nouvelle partie
-          </button>
-        </div>
-
-        <div id="gameGrid" class="game-grid">
-          <div class="game-empty">Clique sur “Nouvelle partie” pour commencer.</div>
-        </div>
-
-        <div class="game-input-row">
-          <input
-            type="text"
-            id="gameGuessInput"
-            placeholder="Tape un mot et appuie sur Entrée"
-            autocomplete="off"
-          >
-          <button id="gameGuessBtn" class="small">Valider</button>
-        </div>
-        <div id="gameMessage" class="game-message"></div>
-
-        <hr class="divider">
-
-        <!-- 3️⃣ SOLVER -->
-        <h2>3️⃣ Suggestions & probabilités</h2>
-        <div class="hint">
-          Le solver filtre le dictionnaire selon toutes les tentatives et classe les mots restants
-          selon un score de “qualité”.
-        </div>
-
-        <div class="results-header">
-          <div class="results-header-title">Meilleurs mots possibles</div>
-          <button id="solveBtn">
-            <span>🧠</span>
-            <span>Calculer les suggestions</span>
-          </button>
-        </div>
-
-        <div class="results-meta">
-          <span id="resultsCount" class="badge-small">Candidats : 0</span>
-          <span class="badge-small">
-            Score basé sur la fréquence des lettres parmi les solutions encore possibles.
-          </span>
-        </div>
-
-        <div id="constraintsBox" class="constraints-box">
-          Aucune contrainte pour l’instant : ajoute au moins une tentative.
-        </div>
-
-        <div id="resultsBox" class="results-box">
-          <div class="empty">
-            ➜ Ajoute quelques tentatives (ou joue une partie) puis clique sur
-            “Calculer les suggestions”.
-          </div>
-        </div>
-
-        <div class="info-text">
-          Le score n’est pas une vraie probabilité mathématique, mais un indicateur :
-          plus il est élevé, plus le mot couvre de lettres fréquentes dans les solutions encore possibles.
-        </div>
-
-        <hr class="divider">
-
-        <!-- 4️⃣ STATS -->
-        <div class="stats-header">
-          <h3>4️⃣ Historique & statistiques locales</h3>
-          <div class="stats-actions">
-            <button id="markWinBtn" class="small success">
-              ✅ Marquer comme victoire (manuel)
-            </button>
-            <button id="markLossBtn" class="small danger">
-              ❌ Marquer comme échec (manuel)
-            </button>
-          </div>
-        </div>
-
-        <div class="stats-grid">
-          <div class="stat-box">
-            <div class="stat-label">Parties</div>
-            <div id="statTotal" class="stat-value">0</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Victoires</div>
-            <div id="statWins" class="stat-value">0</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Défaites</div>
-            <div id="statLosses" class="stat-value">0</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Winrate</div>
-            <div id="statWinrate" class="stat-value small">
-              0 %
+          <div class="attempts-header">
+            <div>
+              <div class="title">2️⃣ Tentatives à analyser</div>
+              <div class="attempts-legend">
+                <span class="legend-badge">
+                  <span class="legend-swatch legend-grey"></span>⬛ vide → lettre absente
+                </span>
+                <span class="legend-badge">
+                  <span class="legend-swatch legend-yellow"></span>🟨 clic 1 → mauvaise place
+                </span>
+                <span class="legend-badge">
+                  <span class="legend-swatch legend-green"></span>🟩 clic 2 → bien placée
+                </span>
+              </div>
+            </div>
+            <div>
+              <button id="addAttemptBtn" class="small">
+                <span>＋</span>
+                <span>Ajouter une tentative</span>
+              </button>
             </div>
           </div>
-          <div class="stat-box">
-            <div class="stat-label">Série actuelle</div>
-            <div id="statStreak" class="stat-value">0</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Meilleure série</div>
-            <div id="statBestStreak" class="stat-value">0</div>
-          </div>
-          <div class="stat-box wide">
-            <div class="stat-label">Moyenne d'essais (victoires)</div>
-            <div id="statAvgGuesses" class="stat-value small">—</div>
-          </div>
-        </div>
 
-        <div class="histogram-container">
-          <div class="histogram-title">Répartition des essais (victoires uniquement)</div>
-          <div id="histogram" class="histogram"></div>
-        </div>
+          <div id="attemptsContainer" class="attempts-container"></div>
 
-        <div class="history-container">
-          <div class="history-title-row">
-            <div class="history-title">Dernières parties</div>
-            <button id="resetStatsBtn" class="small secondary danger-soft">
-              🔄 Réinitialiser les stats
+          <div class="warning-text">
+            Ajoute chaque tentative (mot joué dans un vrai Motus / Wordle), clique sur les lettres
+            pour reproduire les couleurs, puis passe à l’onglet “Solveur”.
+          </div>
+        </section>
+
+        <section class="card right">
+          <h2>3️⃣ Suggestions & probabilités</h2>
+          <div class="hint">
+            Le solver filtre le dictionnaire selon toutes les tentatives et classe les mots restants
+            selon un score de “qualité”.
+          </div>
+
+          <div class="results-header">
+            <div class="results-header-title">Meilleurs mots possibles</div>
+            <button id="solveBtn">
+              <span>🧠</span>
+              <span>Calculer les suggestions</span>
             </button>
           </div>
-          <ul id="historyList" class="history-list"></ul>
-        </div>
-      </section>
+
+          <div class="results-meta">
+            <span id="resultsCount" class="badge-small">Candidats : 0</span>
+            <span class="badge-small">
+              Score basé sur la fréquence des lettres parmi les solutions encore possibles.
+            </span>
+          </div>
+
+          <div id="constraintsBox" class="constraints-box">
+            Aucune contrainte pour l’instant : ajoute au moins une tentative.
+          </div>
+
+          <div id="resultsBox" class="results-box">
+            <div class="empty">
+              ➜ Ajoute quelques tentatives puis clique sur “Calculer les suggestions”.
+            </div>
+          </div>
+
+          <div class="info-text">
+            Le score n’est pas une vraie probabilité mathématique, mais un indicateur :
+            plus il est élevé, plus le mot couvre de lettres fréquentes dans les solutions encore possibles.
+          </div>
+        </section>
+      </div>
+
+      <!-- PAGE STATS -->
+      <div id="pageStats" class="page">
+        <section class="card right">
+          <div class="stats-header">
+            <h2>📊 Historique & statistiques</h2>
+            <div class="stats-actions">
+              <button id="markWinBtn" class="small success">
+                ✅ Marquer comme victoire (manuel)
+              </button>
+              <button id="markLossBtn" class="small danger">
+                ❌ Marquer comme échec (manuel)
+              </button>
+            </div>
+          </div>
+
+          <div class="hint">
+            Les parties jouées dans l’onglet Motus sont ajoutées automatiquement ici.
+            Tu peux aussi ajouter des parties manuellement.
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-label">Parties</div>
+              <div id="statTotal" class="stat-value">0</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Victoires</div>
+              <div id="statWins" class="stat-value">0</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Défaites</div>
+              <div id="statLosses" class="stat-value">0</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Winrate</div>
+              <div id="statWinrate" class="stat-value small">
+                0 %
+              </div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Série actuelle</div>
+              <div id="statStreak" class="stat-value">0</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Meilleure série</div>
+              <div id="statBestStreak" class="stat-value">0</div>
+            </div>
+            <div class="stat-box wide">
+              <div class="stat-label">Moyenne d'essais (victoires)</div>
+              <div id="statAvgGuesses" class="stat-value small">—</div>
+            </div>
+          </div>
+
+          <div class="histogram-container">
+            <div class="histogram-title">Répartition des essais (victoires uniquement)</div>
+            <div id="histogram" class="histogram"></div>
+          </div>
+
+          <div class="history-container">
+            <div class="history-title-row">
+              <div class="history-title">Dernières parties</div>
+              <button id="resetStatsBtn" class="small secondary danger-soft">
+                🔄 Réinitialiser les stats
+              </button>
+            </div>
+            <ul id="historyList" class="history-list"></ul>
+          </div>
+        </section>
+      </div>
     </main>
   </div>
 

@@ -877,6 +877,24 @@ gameGuessInput.addEventListener("keydown", (e) => {
     handleGameGuess();
   }
 });
+// ------------ ONGLET / PAGES ------------
+
+const tabButtons = document.querySelectorAll(".tab-btn");
+const pages = document.querySelectorAll(".page");
+
+tabButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const targetId = btn.dataset.page;
+
+    // activer le bon bouton
+    tabButtons.forEach((b) => b.classList.toggle("active", b === btn));
+
+    // afficher la bonne page
+    pages.forEach((p) => {
+      p.classList.toggle("active", p.id === targetId);
+    });
+  });
+});
 
 // ------------ INITIALISATION ------------
 
